@@ -38,11 +38,15 @@ fn run_prompt() {
         std::io::stdout().flush().expect("failed to flush stdout");
 
         let mut buf = String::new();
-        let bytes_read = std::io::stdin()
-            .read_line(&mut buf)
-            .expect("failed to read stdin");
+        match std::io::stdin().read_line(&mut buf) {
+            Ok(0) => break, // EOF reached
+            Ok(_) => {}
+            Err(e) => {
+                println!("error: {e}");
+                continue;
+            }
+        };
 
-        println!("Read {} bytes", bytes_read);
         match buf.trim() {
             "quit" => break,
             _ => println!("<{}>", buf.trim()),
