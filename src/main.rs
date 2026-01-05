@@ -27,11 +27,6 @@ fn run_file(fname: &str) {
     run(contents);
 }
 
-fn run(input: Vec<u8>) {
-    _ = input;
-    todo!("run input");
-}
-
 fn run_prompt() {
     loop {
         print!("> ");
@@ -49,7 +44,11 @@ fn run_prompt() {
 
         match buf.trim() {
             "quit" => break,
-            _ => println!("<{}>", buf.trim()),
+            _ => run(buf.trim().as_bytes().to_vec()),
         }
     }
+}
+
+fn run(input: Vec<u8>) {
+    todo!("run: {input:?}");
 }
