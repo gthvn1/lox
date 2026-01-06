@@ -2,6 +2,7 @@ use crate::token::{Token, TokenType};
 
 pub struct Scanner<'a> {
     source: &'a [u8],
+    tokens: Vec<Token<'a>>,
     start: usize,   // points to the first character in lexeme being scanned
     current: usize, // point at the character currently being considered
     line: usize,    // track source line
@@ -11,6 +12,7 @@ impl<'a> Scanner<'a> {
     pub fn new(source: &'a [u8]) -> Scanner<'a> {
         Scanner {
             source,
+            tokens: Vec::new(),
             start: 0,
             current: 0,
             line: 1,
@@ -18,13 +20,13 @@ impl<'a> Scanner<'a> {
     }
 
     pub fn scan_tokens(&mut self) -> Vec<Token<'a>> {
-        let mut tokens = Vec::new();
-
         while !self.is_at_end() {
             self.start = self.current;
             self.scan_token();
         }
 
+        // Move ownership out and add Eof token before returning
+        let mut tokens = std::mem::take(&mut self.tokens);
         tokens.push(Token::new(TokenType::Eof, "", None, self.line));
         tokens
     }
@@ -32,19 +34,28 @@ impl<'a> Scanner<'a> {
     fn scan_token(&mut self) {
         let c = self.advance();
         match c {
-            b'(' => println!("TODO: add left paren token"),
-            b')' => println!("TODO: add right paren token"),
+            b'(' => self.add_token(TokenType::LeftParen),
+            b')' => self.add_token(TokenType::RightParen),
             _ => todo!("handle next token"),
         }
     }
 
-    // return the current byte and update the current position
+    fn add_token(&mut self, token_type: TokenType) {
+        let lexeme = std::str::from_utf8(&self.source[self.start..self.current])
+            .expect("lexeme should be valid UTF-8");
+
+        self.tokens
+            .push(Token::new(token_type, lexeme, None, self.line));
+    }
+
+    // returns the current byte and update the current position
     fn advance(&mut self) -> u8 {
         let b = self.source[self.current];
         self.current += 1;
         b
     }
 
+    // returns true if we are at then end of the source
     fn is_at_end(&self) -> bool {
         self.current >= self.source.len()
     }
