@@ -1,15 +1,7 @@
-use std::fmt;
+use crate::token::Token;
 
 pub struct Scanner<'a> {
     source: &'a Vec<u8>,
-}
-pub struct Token {}
-
-impl fmt::Display for Token {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        _ = self;
-        write!(f, "todo")
-    }
 }
 
 impl<'a> Scanner<'a> {
@@ -17,7 +9,7 @@ impl<'a> Scanner<'a> {
         Scanner { source }
     }
 
-    pub fn scan_tokens(&self) -> Vec<Token> {
+    pub fn scan_tokens(&self) -> Vec<Token<'a>> {
         _ = self.source;
         Vec::new()
     }
