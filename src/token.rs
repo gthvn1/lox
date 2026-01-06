@@ -2,8 +2,8 @@ use std::fmt;
 
 pub struct Token<'a> {
     token_type: TokenType,
-    literal: String, // It is the runtime object that will be used by interpreter
-    lexeme: &'a str, // The raw substring in the source
+    literal: Option<String>, // It is the runtime object that will be used by interpreter
+    lexeme: &'a str,         // The raw substring in the source
     line: usize,
 }
 
@@ -59,7 +59,7 @@ pub enum TokenType {
 }
 
 impl<'a> Token<'a> {
-    pub fn new(ty: TokenType, lexeme: &'a str, literal: String, line: usize) -> Token<'a> {
+    pub fn new(ty: TokenType, lexeme: &'a str, literal: Option<String>, line: usize) -> Token<'a> {
         Token {
             token_type: ty,
             literal,
@@ -68,8 +68,14 @@ impl<'a> Token<'a> {
         }
     }
 }
+
 impl<'a> fmt::Display for Token<'a> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{:?} {} {}", self.token_type, self.lexeme, self.literal)
+        let literal = match &self.literal {
+            None => "null",
+            Some(s) => s.as_str(),
+        };
+
+        write!(f, "{:?} {} {}", self.token_type, self.lexeme, literal)
     }
 }

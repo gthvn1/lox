@@ -58,7 +58,7 @@ fn run_prompt() {
 }
 
 fn run(input: Vec<u8>) {
-    let scanner = Scanner::new(&input);
+    let mut scanner = Scanner::new(&input);
     let tokens = scanner.scan_tokens();
 
     tokens.iter().for_each(|t| println!("{}", t));
