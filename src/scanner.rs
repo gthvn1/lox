@@ -8,7 +8,7 @@ pub struct Scanner<'a> {
 }
 
 impl<'a> Scanner<'a> {
-    pub fn new(source: &'a Vec<u8>) -> Scanner<'a> {
+    pub fn new(source: &'a [u8]) -> Scanner<'a> {
         Scanner {
             source,
             start: 0,
@@ -30,8 +30,19 @@ impl<'a> Scanner<'a> {
     }
 
     fn scan_token(&mut self) {
-        _ = self;
-        todo!("scan the token");
+        let c = self.advance();
+        match c {
+            b'(' => println!("TODO: add left paren token"),
+            b')' => println!("TODO: add right paren token"),
+            _ => todo!("handle next token"),
+        }
+    }
+
+    // return the current byte and update the current position
+    fn advance(&mut self) -> u8 {
+        let b = self.source[self.current];
+        self.current += 1;
+        b
     }
 
     fn is_at_end(&self) -> bool {

@@ -29,7 +29,7 @@ fn run_file(fname: &str) {
     };
 
     println!("Read {} bytes", contents.len());
-    run(contents);
+    run(&contents);
 }
 
 fn run_prompt() {
@@ -52,13 +52,13 @@ fn run_prompt() {
 
         match buf.trim() {
             "quit" => break,
-            _ => run(buf.trim().as_bytes().to_vec()),
+            _ => run(buf.trim().as_bytes()),
         }
     }
 }
 
-fn run(input: Vec<u8>) {
-    let mut scanner = Scanner::new(&input);
+fn run(input: &[u8]) {
+    let mut scanner = Scanner::new(input);
     let tokens = scanner.scan_tokens();
 
     tokens.iter().for_each(|t| println!("{}", t));
