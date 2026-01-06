@@ -1,3 +1,3 @@
 # Lox
 
-- https://craftinginterpreters.com/
+- [Crafting Interpreters](https://craftinginterpreters.com/contents.html) by Robert Nystrom
