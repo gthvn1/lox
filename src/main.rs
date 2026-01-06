@@ -1,3 +1,7 @@
+mod scanner;
+
+use scanner::Scanner;
+
 use std::io::Write;
 
 fn main() {
@@ -28,6 +32,9 @@ fn run_file(fname: &str) {
 }
 
 fn run_prompt() {
+    println!("Welcome to Lox REPL");
+    println!("'quit' to quit");
+
     loop {
         print!("> ");
         std::io::stdout().flush().expect("failed to flush stdout");
@@ -50,5 +57,8 @@ fn run_prompt() {
 }
 
 fn run(input: Vec<u8>) {
-    todo!("run: {input:?}");
+    let scanner = Scanner::new(&input);
+    let tokens = scanner.scan_tokens();
+
+    tokens.iter().for_each(|t| println!("{}", t));
 }
