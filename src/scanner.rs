@@ -54,38 +54,60 @@ impl<'a> Scanner<'a> {
             b';' => self.add_token(TokenType::Semicolon),
             b'*' => self.add_token(TokenType::Star),
             b'!' => {
-                if self.match_next(b'=') {
+                if self.match_current(b'=') {
                     self.add_token(TokenType::BangEqual)
                 } else {
                     self.add_token(TokenType::Bang)
                 }
             }
             b'=' => {
-                if self.match_next(b'=') {
+                if self.match_current(b'=') {
                     self.add_token(TokenType::EqualEqual)
                 } else {
                     self.add_token(TokenType::Equal)
                 }
             }
             b'<' => {
-                if self.match_next(b'=') {
+                if self.match_current(b'=') {
                     self.add_token(TokenType::LessEqual)
                 } else {
                     self.add_token(TokenType::Less)
                 }
             }
             b'>' => {
-                if self.match_next(b'=') {
+                if self.match_current(b'=') {
                     self.add_token(TokenType::GreaterEqual)
                 } else {
                     self.add_token(TokenType::Greater)
                 }
             }
+            b'/' => {
+                if self.match_current(b'/') {
+                    while (self.peek() != b'\n') && !self.is_at_end() {
+                        _ = self.advance();
+                    }
+                } else {
+                    self.add_token(TokenType::Slash)
+                }
+            }
+            b' ' | b'\r' | b'\t' => {}
+            b'\n' => self.line += 1,
             _ => self.had_error = report_error(self.line, "Unexpected character"),
         }
     }
 
-    fn match_next(&mut self, expected: u8) -> bool {
+    // peek return the current character  without consuming the
+    fn peek(&self) -> u8 {
+        if self.is_at_end() {
+            b'\0'
+        } else {
+            self.source[self.current]
+        }
+    }
+
+    // return true if the current character is the expected one. And if it
+    // is it consume it.
+    fn match_current(&mut self, expected: u8) -> bool {
         if self.is_at_end() {
             false
         } else if self.source[self.current] != expected {
@@ -94,14 +116,6 @@ impl<'a> Scanner<'a> {
             self.current += 1;
             true
         }
-    }
-
-    fn add_token(&mut self, token_type: TokenType) {
-        let lexeme = std::str::from_utf8(&self.source[self.start..self.current])
-            .expect("lexeme should be valid UTF-8");
-
-        self.tokens
-            .push(Token::new(token_type, lexeme, None, self.line));
     }
 
     // returns the current byte and update the current position
@@ -114,5 +128,13 @@ impl<'a> Scanner<'a> {
     // returns true if we are at then end of the source
     fn is_at_end(&self) -> bool {
         self.current >= self.source.len()
+    }
+
+    fn add_token(&mut self, token_type: TokenType) {
+        let lexeme = std::str::from_utf8(&self.source[self.start..self.current])
+            .expect("lexeme should be valid UTF-8");
+
+        self.tokens
+            .push(Token::new(token_type, lexeme, None, self.line));
     }
 }
