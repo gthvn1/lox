@@ -71,6 +71,7 @@ impl<'a> Token<'a> {
 
 impl<'a> fmt::Display for Token<'a> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        _ = self.line; // allow to remove the not use warning when building
         let literal = match &self.literal {
             None => "null",
             Some(s) => s.as_str(),
