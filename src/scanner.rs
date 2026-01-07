@@ -96,11 +96,26 @@ impl<'a> Scanner<'a> {
             _ => {
                 if c.is_ascii_digit() {
                     self.number()
+                } else if is_alpha(c) {
+                    self.identifier()
                 } else {
                     self.had_error = report_error(self.line, "Unexpected character")
                 }
             }
         }
+    }
+
+    fn identifier(&mut self) {
+        while is_alphanumeric(self.peek()) {
+            self.advance();
+        }
+
+        let text = std::str::from_utf8(&self.source[self.start..self.current]).unwrap();
+        let token_type = match TokenType::of_string(text) {
+            None => TokenType::Identifier,
+            Some(tt) => tt,
+        };
+        self.add_token(token_type);
     }
 
     fn number(&mut self) {
@@ -200,4 +215,12 @@ impl<'a> Scanner<'a> {
         self.tokens
             .push(Token::new(token_type, lexeme, literal, self.line));
     }
+}
+
+fn is_alpha(c: u8) -> bool {
+    c.is_ascii_alphabetic() || c == b'_'
+}
+
+fn is_alphanumeric(c: u8) -> bool {
+    c.is_ascii_alphanumeric() || c == b'_'
 }

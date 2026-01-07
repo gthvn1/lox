@@ -64,6 +64,30 @@ pub enum TokenType {
     Eof,
 }
 
+impl TokenType {
+    pub fn of_string(ident: &str) -> Option<TokenType> {
+        match ident {
+            "and" => Some(TokenType::And),
+            "class" => Some(TokenType::Class),
+            "else" => Some(TokenType::Else),
+            "false" => Some(TokenType::False),
+            "fun" => Some(TokenType::Fun),
+            "for" => Some(TokenType::For),
+            "if" => Some(TokenType::If),
+            "nil" => Some(TokenType::Nil),
+            "or" => Some(TokenType::Or),
+            "print" => Some(TokenType::Print),
+            "return" => Some(TokenType::Return),
+            "super" => Some(TokenType::Super),
+            "this" => Some(TokenType::This),
+            "true" => Some(TokenType::True),
+            "var" => Some(TokenType::Var),
+            "while" => Some(TokenType::While),
+            _ => None,
+        }
+    }
+}
+
 impl<'a> Token<'a> {
     pub fn new(ty: TokenType, lexeme: &'a str, literal: Literal, line: usize) -> Token<'a> {
         Token {
