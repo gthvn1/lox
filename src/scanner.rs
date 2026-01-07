@@ -92,8 +92,34 @@ impl<'a> Scanner<'a> {
             }
             b' ' | b'\r' | b'\t' => {}
             b'\n' => self.line += 1,
+            b'"' => self.string(),
             _ => self.had_error = report_error(self.line, "Unexpected character"),
         }
+    }
+
+    // read string literal
+    fn string(&mut self) {
+        // We try to match the next "
+        while (self.peek() != b'"') && !self.is_at_end() {
+            if self.peek() == b'\n' {
+                self.line += 1;
+            }
+            self.advance();
+        }
+
+        if self.is_at_end() {
+            self.had_error = report_error(self.line, "Unterminated string.");
+            return;
+        }
+
+        // We are at the closing ", consume it
+        self.advance();
+
+        // Trim the surrounding quotes.
+        let value = std::str::from_utf8(&self.source[self.start + 1..self.current - 1])
+            .unwrap()
+            .to_owned();
+        self.add_token_and_literal(TokenType::String, Some(value));
     }
 
     // peek return the current character  without consuming the
@@ -131,10 +157,14 @@ impl<'a> Scanner<'a> {
     }
 
     fn add_token(&mut self, token_type: TokenType) {
+        self.add_token_and_literal(token_type, None);
+    }
+
+    fn add_token_and_literal(&mut self, token_type: TokenType, literal: Option<String>) {
         let lexeme = std::str::from_utf8(&self.source[self.start..self.current])
             .expect("lexeme should be valid UTF-8");
 
         self.tokens
-            .push(Token::new(token_type, lexeme, None, self.line));
+            .push(Token::new(token_type, lexeme, literal, self.line));
     }
 }
