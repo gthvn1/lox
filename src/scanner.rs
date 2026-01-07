@@ -1,4 +1,4 @@
-use crate::token::{Token, TokenType};
+use crate::token::{Literal, Token, TokenType};
 
 fn report_error(line: usize, msg: &str) -> bool {
     println!("[line {line}] Error: {msg}");
@@ -36,7 +36,7 @@ impl<'a> Scanner<'a> {
 
         // Move ownership out and add Eof token before returning
         let mut tokens = std::mem::take(&mut self.tokens);
-        tokens.push(Token::new(TokenType::Eof, "", None, self.line));
+        tokens.push(Token::new(TokenType::Eof, "", Literal::Null, self.line));
         tokens
     }
 
@@ -93,8 +93,35 @@ impl<'a> Scanner<'a> {
             b' ' | b'\r' | b'\t' => {}
             b'\n' => self.line += 1,
             b'"' => self.string(),
-            _ => self.had_error = report_error(self.line, "Unexpected character"),
+            _ => {
+                if c.is_ascii_digit() {
+                    self.number()
+                } else {
+                    self.had_error = report_error(self.line, "Unexpected character")
+                }
+            }
         }
+    }
+
+    fn number(&mut self) {
+        while self.peek().is_ascii_digit() {
+            self.advance();
+        }
+
+        // Look for a fractional part
+        if self.peek() == b'.' && self.peek_next().is_ascii_digit() {
+            // Consume the dot
+            self.advance();
+        }
+
+        while self.peek().is_ascii_digit() {
+            self.advance();
+        }
+
+        let value_str = std::str::from_utf8(&self.source[self.start..self.current]).unwrap();
+        let value: f64 = value_str.parse().unwrap();
+
+        self.add_token_and_literal(TokenType::Number, Literal::Number(value));
     }
 
     // read string literal
@@ -119,7 +146,7 @@ impl<'a> Scanner<'a> {
         let value = std::str::from_utf8(&self.source[self.start + 1..self.current - 1])
             .unwrap()
             .to_owned();
-        self.add_token_and_literal(TokenType::String, Some(value));
+        self.add_token_and_literal(TokenType::String, Literal::String(value));
     }
 
     // peek return the current character  without consuming the
@@ -131,12 +158,18 @@ impl<'a> Scanner<'a> {
         }
     }
 
+    fn peek_next(&self) -> u8 {
+        if self.current + 1 >= self.source.len() {
+            b'\0'
+        } else {
+            self.source[self.current + 1]
+        }
+    }
+
     // return true if the current character is the expected one. And if it
     // is it consume it.
     fn match_current(&mut self, expected: u8) -> bool {
-        if self.is_at_end() {
-            false
-        } else if self.source[self.current] != expected {
+        if self.is_at_end() || self.source[self.current] != expected {
             false
         } else {
             self.current += 1;
@@ -157,18 +190,14 @@ impl<'a> Scanner<'a> {
     }
 
     fn add_token(&mut self, token_type: TokenType) {
-        self.add_token_and_literal(token_type, None);
+        self.add_token_and_literal(token_type, Literal::Null);
     }
 
-    fn add_token_and_literal(&mut self, token_type: TokenType, literal: Option<String>) {
+    fn add_token_and_literal(&mut self, token_type: TokenType, literal: Literal) {
         let lexeme = std::str::from_utf8(&self.source[self.start..self.current])
             .expect("lexeme should be valid UTF-8");
 
         self.tokens
             .push(Token::new(token_type, lexeme, literal, self.line));
     }
-}
-
-fn is_digit(c: u8) -> bool {
-    b'0' <= c && c <= b'9'
 }

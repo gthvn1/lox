@@ -1,9 +1,15 @@
 use std::fmt;
 
+pub enum Literal {
+    String(String),
+    Number(f64),
+    Null,
+}
+
 pub struct Token<'a> {
     token_type: TokenType,
-    literal: Option<String>, // It is the runtime object that will be used by interpreter
-    lexeme: &'a str,         // The raw substring in the source
+    literal: Literal, // It is the runtime object that will be used by interpreter
+    lexeme: &'a str,  // The raw substring in the source
     line: usize,
 }
 
@@ -59,7 +65,7 @@ pub enum TokenType {
 }
 
 impl<'a> Token<'a> {
-    pub fn new(ty: TokenType, lexeme: &'a str, literal: Option<String>, line: usize) -> Token<'a> {
+    pub fn new(ty: TokenType, lexeme: &'a str, literal: Literal, line: usize) -> Token<'a> {
         Token {
             token_type: ty,
             literal,
@@ -73,8 +79,9 @@ impl<'a> fmt::Display for Token<'a> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         _ = self.line; // allow to remove the not use warning when building
         let literal = match &self.literal {
-            None => "null",
-            Some(s) => s.as_str(),
+            Literal::Null => "null".to_string(),
+            Literal::String(s) => s.clone(),
+            Literal::Number(x) => x.to_string(),
         };
 
         write!(f, "{:?} {} {}", self.token_type, self.lexeme, literal)
