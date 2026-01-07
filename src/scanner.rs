@@ -1,11 +1,19 @@
 use crate::token::{Token, TokenType};
 
+fn report_error(line: usize, msg: &str) -> bool {
+    println!("[line {line}] Error: {msg}");
+    true
+}
+
 pub struct Scanner<'a> {
     source: &'a [u8],
     tokens: Vec<Token<'a>>,
+
     start: usize,   // points to the first character in lexeme being scanned
     current: usize, // point at the character currently being considered
     line: usize,    // track source line
+
+    had_error: bool,
 }
 
 impl<'a> Scanner<'a> {
@@ -16,6 +24,7 @@ impl<'a> Scanner<'a> {
             start: 0,
             current: 0,
             line: 1,
+            had_error: false,
         }
     }
 
@@ -36,7 +45,15 @@ impl<'a> Scanner<'a> {
         match c {
             b'(' => self.add_token(TokenType::LeftParen),
             b')' => self.add_token(TokenType::RightParen),
-            _ => todo!("handle next token"),
+            b'{' => self.add_token(TokenType::LeftBrace),
+            b'}' => self.add_token(TokenType::RightBrace),
+            b',' => self.add_token(TokenType::Comma),
+            b'.' => self.add_token(TokenType::Dot),
+            b'-' => self.add_token(TokenType::Minus),
+            b'+' => self.add_token(TokenType::Plus),
+            b';' => self.add_token(TokenType::Semicolon),
+            b'*' => self.add_token(TokenType::Star),
+            _ => self.had_error = report_error(self.line, "Unexpected character"),
         }
     }
 
