@@ -168,3 +168,7 @@ impl<'a> Scanner<'a> {
             .push(Token::new(token_type, lexeme, literal, self.line));
     }
 }
+
+fn is_digit(c: u8) -> bool {
+    b'0' <= c && c <= b'9'
+}
